@@ -30,7 +30,6 @@
   const process = require('process');
   const jre = require('node-jre');
   const grd = require('node-grd');
-  const JSONStream = require('JSONStream')
 
   const smoketest = exports.smoketest = () => new Promise((resolve, reject) =>
     check('This is wong.', 'en-US').then(
@@ -51,7 +50,7 @@
 
   const install = exports.install = () => new Promise((resolve, reject) =>
     grd.install(
-      'schreiben',
+      'qgustavor',
       'node-languagetool-service',
       __dirname,
       'lt',
@@ -83,10 +82,16 @@
         [],
         { encoding: 'utf8' }
       );
-      service.on('error', err => reject(err));
+      service.on('error', reject);
       service.stdout
-        .pipe(JSONStream.parse())
         .on('data', line => {
+          line = line.toString().trim();
+
+          // Ignore empty lines or lines not beginning with { like warnings
+          // (needed because languagetool-org/languagetool/issues/1604)
+          if (!line || !line.startsWith('{')) return;
+          line = JSON.parse(line);
+
           var entry = queue.pop();
           if (line.code === 200 && entry.resolve)
             entry.resolve(line);
@@ -108,7 +113,7 @@
     (resolve, reject) => start().then(resolve, reject)
   );
 
-  const send = exports.send = cmd => new Promise((resolve, reject) => start().then(() => {
+  const send = exports.send = cmd => start().then(new Promise((resolve, reject) => {
     var entry = {
       cmd: cmd,
       resolve: resolve,
