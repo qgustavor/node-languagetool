@@ -113,7 +113,7 @@
     (resolve, reject) => start().then(resolve, reject)
   );
 
-  const send = exports.send = cmd => start().then(new Promise((resolve, reject) => {
+  const send = exports.send = cmd => start().then(() => new Promise((resolve, reject) => {
     var entry = {
       cmd: cmd,
       resolve: resolve,
