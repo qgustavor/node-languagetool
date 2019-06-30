@@ -31,21 +31,12 @@
   const jre = require('node-jre');
   const grd = require('node-grd');
 
-  const smoketest = exports.smoketest = () => new Promise((resolve, reject) =>
-    check('This is wong.', 'en-US').then(
-      res => {
-        try {
-          var match = res.matches[0];
-          if (match.offset === 8 && match.length === 4)
-            resolve();
-          else
-            reject('Check was wrong.');
-        } catch (ex) {
-          reject(ex);
-        }
-      },
-      err => reject(err)
-    )
+  const smoketest = exports.smoketest = check('This is wong.', 'en-US').then(
+    res => {
+      var match = res.matches[0];
+      if (match.offset === 8 && match.length === 4) return;
+      throw Error('Check was wrong.');
+    }
   );
 
   const install = exports.install = () => new Promise((resolve, reject) =>
@@ -124,10 +115,11 @@
       writeTopCommand();
   }));
 
-  const check = exports.check = (text, locale) => send({
+  const check = exports.check = (text, locale, options = {}) => send({
     command: "check",
     text: text,
-    language: locale.toString()
+    language: locale.toString(),
+    ...options
   });
 
   const languages = exports.languages = () => send({ command: "languages" });
