@@ -31,7 +31,7 @@
   const jre = require('node-jre');
   const grd = require('node-grd');
 
-  const smoketest = exports.smoketest = check('This is wong.', 'en-US').then(
+  const smoketest = exports.smoketest = () => check('This is wong.', 'en-US').then(
     res => {
       var match = res.matches[0];
       if (match.offset === 8 && match.length === 4) return;
